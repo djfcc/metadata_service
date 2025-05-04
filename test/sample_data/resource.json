@@ -1,0 +1,8 @@
+{
+    "name": "chatbot-postgres-db",
+    "description": "Postgres database for chatbot",
+    "type": "postgres",
+    "owner": 1,
+    "company": 1,
+    "lifecycle_status": "active"
+}

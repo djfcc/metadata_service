@@ -1,0 +1,6 @@
+{
+    "company_id": 1,
+    "name": "ai-team",
+    "description": "AI features team.",
+    "members": [1,2]
+}

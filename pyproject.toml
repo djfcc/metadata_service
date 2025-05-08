@@ -1,5 +1,5 @@
 [project]
-name = "fastapi_test"
+name = "metadata_service"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -8,13 +8,18 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "aiosqlite>=0.21.0",
     "alembic>=1.15.2",
     "fastapi[standard]>=0.115.12",
+    "httpx>=0.28.1",
+    "pytest-mock>=3.14.0",
+    "sqlalchemy[asyncio]>=2.0.40",
     "sqlmodel>=0.0.24",
+    "trio>=0.30.0",
 ]
 
 [project.scripts]
-fastapi_test = "fastapi_test:main"
+metadataservice = "metadata_service:main"
 
 [tool.ruff.lint]
 extend-select = [

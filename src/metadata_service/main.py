@@ -2,14 +2,14 @@
 
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-from fastapi_test.routers import users, teams, resources, companies
+from metadata_service.routers import company, resource, team, user
 
 
 app = FastAPI()
-app.include_router(users.router)
-app.include_router(teams.router)
-app.include_router(resources.router)
-app.include_router(companies.router)
+app.include_router(user.router)
+app.include_router(team.router)
+app.include_router(resource.router)
+app.include_router(company.router)
 
 
 # TODO: Add middleware for metrics and logging.

@@ -1,4 +1,4 @@
-"""Test the user endpoints."""
+"""Test the team endpoints."""
 
 import pytest
 
@@ -11,30 +11,24 @@ from metadata_service.db import get_session
 from metadata_service.models import database
 
 
-@pytest.fixture(autouse=True)
-def client():
-    """Create a fixture for the FastAPI test client."""
-    return testclient.TestClient(app)
-
-
-def test_get_users(client: testclient.TestClient, mocker: MockerFixture):
-    """Test the get_users endpoint."""
+def test_get_teams(client: testclient.TestClient, mocker: MockerFixture):
+    """Test the get_teams endpoint."""
 
     async def session_override():
         mock_context_manager = mocker.MagicMock(AsyncSession)
         mock_result = mocker.Mock()
         mock_result.scalars.return_value.all.return_value = [
-            database.User(
+            database.Team(
                 id=1,
-                name="test",
-                email="test@test.com",
+                name="test team",
+                description="test description",
                 company_id=1,
             ),
-            database.User(
+            database.Team(
                 id=2,
-                name="test2",
-                email="test2@test.com",
-                company_id=2,
+                name="test team 2",
+                description="test description",
+                company_id=1,
             ),
         ]
         mock_context_manager.execute.return_value = mock_result
@@ -42,36 +36,36 @@ def test_get_users(client: testclient.TestClient, mocker: MockerFixture):
 
     app.dependency_overrides[get_session] = session_override
 
-    response = client.get("/users")
+    response = client.get("/teams")
     assert response.status_code == 200
     assert response.json() == [
         {
             "id": 1,
-            "name": "test",
-            "email": "test@test.com",
+            "name": "test team",
             "company_id": 1,
+            "description": "test description",
         },
         {
             "id": 2,
-            "name": "test2",
-            "email": "test2@test.com",
-            "company_id": 2,
+            "name": "test team 2",
+            "company_id": 1,
+            "description": "test description",
         },
     ]
 
 
-def test_get_user_success(client: testclient.TestClient, mocker: MockerFixture):
-    """Test the get_user endpoint."""
+def test_get_team_success(client: testclient.TestClient, mocker: MockerFixture):
+    """Test the get_team endpoint."""
 
     async def get_session_override():
         mocker = MockerFixture(pytest)
         mock_context_manager = mocker.MagicMock(AsyncSession)
 
         mock_result = mocker.Mock()
-        mock_result.scalars.return_value.one_or_none.return_value = database.User(
+        mock_result.scalars.return_value.one_or_none.return_value = database.Team(
             id=1,
-            name="test",
-            email="test@test.com",
+            name="test team",
+            description="test description",
             company_id=1,
         )
         mock_context_manager.execute.return_value = mock_result
@@ -80,18 +74,18 @@ def test_get_user_success(client: testclient.TestClient, mocker: MockerFixture):
 
     app.dependency_overrides[get_session] = get_session_override
 
-    response = client.get("/users/1")
+    response = client.get("/teams/1")
     assert response.status_code == 200
     assert response.json() == {
         "id": 1,
-        "name": "test",
-        "email": "test@test.com",
+        "name": "test team",
         "company_id": 1,
+        "description": "test description",
     }
 
 
-def test_get_user_not_found(client: testclient.TestClient, mocker: MockerFixture):
-    """Test the get_user endpoint returns 404 not found if the user doesn't exist."""
+def test_get_team_not_found(client: testclient.TestClient, mocker: MockerFixture):
+    """Test the get_team endpoint returns 404 not found if the team doesn't exist."""
 
     async def get_session_override():
         mocker = MockerFixture(pytest)
@@ -105,20 +99,20 @@ def test_get_user_not_found(client: testclient.TestClient, mocker: MockerFixture
 
     app.dependency_overrides[get_session] = get_session_override
 
-    response = client.get("/users/300")
+    response = client.get("/teams/300")
     assert response.status_code == 404
     assert response.json() == {"detail": "Item not found"}
 
 
-def test_create_user_new(client: testclient.TestClient, mocker: MockerFixture):
-    """Test the create_user endpoint. Test creating a new user."""
+def test_create_team_new(client: testclient.TestClient, mocker: MockerFixture):
+    """Test the create_team endpoint. Test creating a new team."""
 
     async def get_session_override():
         mocker = MockerFixture(pytest)
         mock_context_manager = mocker.MagicMock(AsyncSession)
 
-        def mock_refresh(user: database.User):
-            user.id = 3
+        def mock_refresh(team: database.Team):
+            team.id = 3
 
         mock_context_manager.refresh.side_effect = mock_refresh
 
@@ -127,34 +121,34 @@ def test_create_user_new(client: testclient.TestClient, mocker: MockerFixture):
     app.dependency_overrides[get_session] = get_session_override
 
     response = client.post(
-        "/user",
+        "/team",
         json={
-            "name": "new_user",
-            "email": "new_user@fake.com",
             "company_id": 1,
+            "description": "bills team",
+            "name": "new_team",
         },
     )
     assert response.status_code == 200
     assert response.json() == {
         "id": 3,
         "company_id": 1,
-        "email": "new_user@fake.com",
-        "name": "new_user",
+        "description": "bills team",
+        "name": "new_team",
     }
 
 
-def test_update_user(client: testclient.TestClient, mocker: MockerFixture):
-    """Test the update_user endpoint. Test updating an existing user."""
+def test_update_team(client: testclient.TestClient, mocker: MockerFixture):
+    """Test the update_team endpoint. Test updating an existing team."""
 
     async def get_session_override():
         mocker = MockerFixture(pytest)
         mock_context_manager = mocker.MagicMock(AsyncSession)
 
         mock_result = mocker.Mock()
-        mock_result.scalars.return_value.one_or_none.return_value = database.User(
+        mock_result.scalars.return_value.one_or_none.return_value = database.Team(
             id=1,
-            name="david",
-            email="david@fake.com",
+            name="davids team",
+            description="test description",
             company_id=1,
         )
         mock_context_manager.execute.return_value = mock_result
@@ -164,20 +158,20 @@ def test_update_user(client: testclient.TestClient, mocker: MockerFixture):
     app.dependency_overrides[get_session] = get_session_override
 
     response = client.put(
-        "/user/1",
-        json={"name": "david_updated", "email": "david@fake.com", "company_id": 1},
+        "/team/1",
+        json={"name": "david_updated", "description": "super team", "company_id": 1},
     )
     assert response.status_code == 200
     assert response.json() == {
         "company_id": 1,
         "id": 1,
         "name": "david_updated",
-        "email": "david@fake.com",
+        "description": "super team",
     }
 
 
-def test_update_user_not_found(client: testclient.TestClient, mocker: MockerFixture):
-    """Test the update_user endpoint returns 404 not found if the user doesn't exist."""
+def test_update_team_not_found(client: testclient.TestClient, mocker: MockerFixture):
+    """Test the update_team endpoint returns 404 not found if the team doesn't exist."""
 
     async def get_session_override():
         mocker = MockerFixture(pytest)
@@ -192,25 +186,29 @@ def test_update_user_not_found(client: testclient.TestClient, mocker: MockerFixt
     app.dependency_overrides[get_session] = get_session_override
 
     response = client.put(
-        "/user/10",
-        json={"name": "user_not_found", "email": "user@fake.com", "company_id": 1},
+        "/team/10",
+        json={
+            "name": "team_not_found",
+            "description": "new description",
+            "company_id": 1,
+        },
     )
     assert response.status_code == 404
     assert response.json() == {"detail": "Item not found"}
 
 
-def test_delete_user_success(client: testclient.TestClient, mocker: MockerFixture):
-    """Test the delete_user endpoint. Test deleting an existing user."""
+def test_delete_team_success(client: testclient.TestClient, mocker: MockerFixture):
+    """Test the delete_team endpoint. Test deleting an existing team."""
 
     async def get_session_override():
         mocker = MockerFixture(pytest)
         mock_context_manager = mocker.MagicMock(AsyncSession)
 
         mock_result = mocker.Mock()
-        mock_result.scalars.return_value.one_or_none.return_value = database.User(
+        mock_result.scalars.return_value.one_or_none.return_value = database.Team(
             id=1,
-            name="david",
-            email="test@fake.com",
+            name="teamx",
+            description="test description",
             company_id=1,
         )
         mock_context_manager.execute.return_value = mock_result
@@ -219,13 +217,13 @@ def test_delete_user_success(client: testclient.TestClient, mocker: MockerFixtur
 
     app.dependency_overrides[get_session] = get_session_override
 
-    response = client.delete("/user/1")
+    response = client.delete("/team/1")
     assert response.status_code == 200
-    assert response.json() == {"id": 1, "name": "david", "status": "deleted"}
+    assert response.json() == {"id": 1, "name": "teamx", "status": "deleted"}
 
 
-def test_delete_user_not_found(client: testclient.TestClient, mocker: MockerFixture):
-    """Test the delete_user endpoint. Test deleting a user that doesn't exist."""
+def test_delete_team_not_found(client: testclient.TestClient, mocker: MockerFixture):
+    """Test the delete_team endpoint. Test deleting a team that doesn't exist."""
 
     async def get_session_override():
         mocker = MockerFixture(pytest)
@@ -238,6 +236,6 @@ def test_delete_user_not_found(client: testclient.TestClient, mocker: MockerFixt
 
     app.dependency_overrides[get_session] = get_session_override
 
-    response = client.delete("/user/100")
+    response = client.delete("/team/100")
     assert response.status_code == 404
     assert response.json() == {"detail": "Item not found"}

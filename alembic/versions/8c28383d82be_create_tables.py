@@ -22,13 +22,13 @@ def upgrade() -> None:
     """Upgrade schema."""
     op.create_table(
         "company",
-        sa.Column("id", sa.Integer, primary_key=True),
+        sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
         sa.Column("name", sa.String(100), nullable=False),
     )
 
     op.create_table(
         "user",
-        sa.Column("id", sa.Integer, primary_key=True),
+        sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
         sa.Column("name", sa.String(50), nullable=False),
         sa.Column("email", sa.String(100), nullable=False),
         sa.Column(
@@ -38,25 +38,22 @@ def upgrade() -> None:
 
     op.create_table(
         "team",
-        sa.Column("id", sa.Integer, primary_key=True),
+        sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
         sa.Column("name", sa.String(100), nullable=False),
         sa.Column(
             "company_id", sa.Integer, sa.ForeignKey("company.id"), nullable=False
         ),
-        sa.Column("description", sa.String(255), nullable=True),
+        sa.Column("description", sa.String(255), nullable=False),
     )
 
     op.create_table(
         "resource",
-        sa.Column("id", sa.Integer, primary_key=True),
+        sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
         sa.Column("name", sa.String(100), nullable=False),
         sa.Column("type", sa.String(50), nullable=False),
         sa.Column("lifecycle_status", sa.String(50), nullable=False),
-        sa.Column("description", sa.String(255), nullable=True),
+        sa.Column("description", sa.String(255), nullable=False),
         sa.Column("owner", sa.Integer, sa.ForeignKey("user.id"), nullable=False),
-        sa.Column(
-            "company_id", sa.Integer, sa.ForeignKey("company.id"), nullable=False
-        ),
     )
 
     op.create_table(
